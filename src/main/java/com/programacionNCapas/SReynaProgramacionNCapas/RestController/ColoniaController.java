@@ -2,6 +2,7 @@ package com.programacionNCapas.SReynaProgramacionNCapas.RestController;
 
 import com.programacionNCapas.SReynaProgramacionNCapas.DAO.ColoniaDAOJPAImplementation;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
+import com.programacionNCapas.SReynaProgramacionNCapas.Service.ColoniaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +20,9 @@ public class ColoniaController {
 
     @Autowired
     private ColoniaDAOJPAImplementation coloniaDAOJPAImplementation;
+    
+    @Autowired
+    private ColoniaService coloniaService;
 
     /**
      * Obtiene todas las colonias de la base de datos
@@ -42,7 +46,7 @@ public class ColoniaController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping("byMunicipio/{IdMunicipio}")
     public ResponseEntity GetByMunicipio(@PathVariable int IdMunicipio) {
-        Result result = coloniaDAOJPAImplementation.GetByIdMunicipio(IdMunicipio);
+        Result result = coloniaService.GetByMunicipio(IdMunicipio);
         return ResponseEntity.status(result.status).body(result);
     }
 }

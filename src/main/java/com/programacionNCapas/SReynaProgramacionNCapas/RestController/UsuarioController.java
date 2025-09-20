@@ -152,6 +152,12 @@ public class UsuarioController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @GetMapping("/getByUsername/{Username}")
+    public ResponseEntity GetByUsername(@PathVariable("Username") String Username) {
+        Result result = usuarioService.GetByUsername(Username);
+        return ResponseEntity.status(result.status).body(result);
+    }
+
 //    @Operation(
 //            summary = "Carga un archivo TXT o XLSX para validación",
 //            description = "El archivo se guarda, se calcula un hash SHA-1 y se registra en logs. "
@@ -346,7 +352,6 @@ public class UsuarioController {
 //
 //        return ResponseEntity.status(result.status).body(result);
 //    }
-
     private List<UsuarioJPA> ProcesarTXT(File file) {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));

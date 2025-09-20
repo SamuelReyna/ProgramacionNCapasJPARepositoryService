@@ -26,7 +26,7 @@ public class UsuarioJPA {
     @Column(name = "iduser")
     private int IdUser;
     @Column(name = "username", unique = true)
-    private String Username;
+    private String username;
     @Column(name = "nombre")
     private String NombreUsuario;
     @Column(name = "apellidomaterno")
@@ -72,7 +72,7 @@ public class UsuarioJPA {
     }
 
     public String getUsername() {
-        return Username;
+        return username;
     }
 
     public int getEstatus() {
@@ -83,8 +83,8 @@ public class UsuarioJPA {
         this.Estatus = Estatus;
     }
 
-    public void setUsername(String Username) {
-        this.Username = Username;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getNombreUsuario() {
@@ -175,9 +175,9 @@ public class UsuarioJPA {
         this.Img = Img;
     }
 
-    public UsuarioJPA(int IdUser, String Username, String NombreUsuario, String ApellidoMaterno, String ApellidoPaterno, String Password, LocalDate FechaNacimiento, String Email, String Telefono, String Celular, String Curp, String Sexo, String Img) {
+    public UsuarioJPA(int IdUser, String username, String NombreUsuario, String ApellidoMaterno, String ApellidoPaterno, String Password, LocalDate FechaNacimiento, String Email, String Telefono, String Celular, String Curp, String Sexo, String Img) {
         this.IdUser = IdUser;
-        this.Username = Username;
+        this.username = username;
         this.NombreUsuario = NombreUsuario;
         this.ApellidoMaterno = ApellidoMaterno;
         this.ApellidoPaterno = ApellidoPaterno;

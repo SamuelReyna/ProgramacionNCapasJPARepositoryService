@@ -128,4 +128,20 @@ public class UsuarioService {
         return result;
     }
 
+    public Result GetByUsername(String Username) {
+        Result result = new Result();
+        try {
+            result.object = iUsuarioRepository.findByUsername(Username);
+            result.correct = true;
+            result.status = 200;
+
+        } catch (Exception ex) {
+            result.errorMessage = ex.getLocalizedMessage();
+            result.correct = false;
+            result.ex = ex;
+            result.status = 500;
+        }
+        return result;
+    }
+
 }
