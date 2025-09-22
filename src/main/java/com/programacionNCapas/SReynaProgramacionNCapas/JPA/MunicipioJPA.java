@@ -18,19 +18,19 @@ public class MunicipioJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idmunicipio")
-    private int IdMunicipio;
+    private int idMunicipio;
     @Column(name = "nombre")
     private String Nombre;
     @ManyToOne
     @JoinColumn(name = "idestado")
-    public EstadoJPA Estado;
+    public EstadoJPA estado;
 
     public int getIdMunicipio() {
-        return IdMunicipio;
+        return idMunicipio;
     }
 
     public void setIdMunicipio(int IdMunicipio) {
-        this.IdMunicipio = IdMunicipio;
+        this.idMunicipio = IdMunicipio;
     }
 
     public String getNombre() {
@@ -43,9 +43,9 @@ public class MunicipioJPA {
 
 
     public MunicipioJPA(int IdMunicipio, String Nombre, EstadoJPA Estado) {
-        this.IdMunicipio = IdMunicipio;
+        this.idMunicipio = IdMunicipio;
         this.Nombre = Nombre;
-        this.Estado = Estado;
+        this.estado = Estado;
     }
 
     public MunicipioJPA() {

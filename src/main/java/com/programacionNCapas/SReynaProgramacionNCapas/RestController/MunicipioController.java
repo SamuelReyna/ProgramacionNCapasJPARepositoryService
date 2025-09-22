@@ -1,7 +1,7 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.RestController;
 
-import com.programacionNCapas.SReynaProgramacionNCapas.DAO.MunicipioDAOJPAImplementation;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
+import com.programacionNCapas.SReynaProgramacionNCapas.Service.MunicipioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MunicipioController {
 
     @Autowired
-    private MunicipioDAOJPAImplementation municipioDAOJPAImplementation;
+    private MunicipioService municipioService;
 
     /**
      * Obtiene todos los municipios de la base de datos
@@ -29,7 +29,7 @@ public class MunicipioController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping()
     public ResponseEntity GetAll() {
-        Result result = municipioDAOJPAImplementation.GetAll();
+        Result result = municipioService.GetAll();
         return ResponseEntity.status(result.status).body(result);
     }
 
@@ -42,7 +42,7 @@ public class MunicipioController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping("/byEstado/{IdEstado}")
     public ResponseEntity GetByEstado(@PathVariable int IdEstado) {
-        Result result = municipioDAOJPAImplementation.GetByIdEstado(IdEstado);
+        Result result = municipioService.GetByEstado(IdEstado);
         return ResponseEntity.status(result.status).body(result);
     }
 }

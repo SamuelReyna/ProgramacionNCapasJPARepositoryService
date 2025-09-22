@@ -1,7 +1,7 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.RestController;
 
-import com.programacionNCapas.SReynaProgramacionNCapas.DAO.RolDAOJPAImplementation;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
+import com.programacionNCapas.SReynaProgramacionNCapas.Service.RolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RolController {
 
     @Autowired
-    private RolDAOJPAImplementation rolDAOJPAImplementation;
+    private RolService rolService;
 
     /**
      * Obtiene todos los roles de la base de datos
@@ -28,7 +28,7 @@ public class RolController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping()
     public ResponseEntity GetAll() {
-        Result result = rolDAOJPAImplementation.GetAll();
+        Result result = rolService.GetAll();
         return ResponseEntity.status(result.status).body(result);
     }
 }

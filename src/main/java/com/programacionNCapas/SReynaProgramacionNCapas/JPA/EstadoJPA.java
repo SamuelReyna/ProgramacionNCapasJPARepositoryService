@@ -17,27 +17,27 @@ public class EstadoJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idestado")
-    private int IdEstado;
+    private int idEstado;
     @Column(name = "nombre")
     private String Nombre;
     @ManyToOne
     @JoinColumn(name = "idpais")
-    public PaisJPA Pais;
+    public PaisJPA pais;
 
     public EstadoJPA() {
     }
 
     public EstadoJPA(int IdEstado, String Nombre) {
-        this.IdEstado = IdEstado;
+        this.idEstado = IdEstado;
         this.Nombre = Nombre;
     }
 
     public int getIdEstado() {
-        return IdEstado;
+        return idEstado;
     }
 
     public void setIdEstado(int IdEstado) {
-        this.IdEstado = IdEstado;
+        this.idEstado = IdEstado;
     }
 
     public String getNombre() {
@@ -47,5 +47,6 @@ public class EstadoJPA {
     public void setNombre(String Nombre) {
         this.Nombre = Nombre;
     }
+    
 
 }

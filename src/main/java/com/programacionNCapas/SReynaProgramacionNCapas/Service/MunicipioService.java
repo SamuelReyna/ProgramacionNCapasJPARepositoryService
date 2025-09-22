@@ -1,47 +1,46 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.Service;
 
-import com.programacionNCapas.SReynaProgramacionNCapas.DAO.IColoniaRepository;
+import com.programacionNCapas.SReynaProgramacionNCapas.DAO.IMunicipioRepository;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ColoniaService {
+public class MunicipioService {
 
     @Autowired
-    private IColoniaRepository iColoniaRepository;
-    
-    
-    public Result GetAll(){
-        Result result = new Result();
-        
-        try {
-            result.object = iColoniaRepository.findAll();
-            result.correct = true;
-            result.status =200;
-        } catch (Exception ex) {
-            result.correct = false;
-            result.status= 500;
-            result.errorMessage = ex.getLocalizedMessage();
-            result.ex = ex;
-        }
-        return result;
-    }
+    private IMunicipioRepository iMunicipioRepository;
 
-    public Result GetByMunicipio(int idMunicipio) {
+    public Result GetAll() {
         Result result = new Result();
-
         try {
-            result.object = iColoniaRepository.findByMunicipio_IdMunicipio(idMunicipio);
+            result.object = iMunicipioRepository.findAll();
             result.correct = true;
             result.status = 200;
         } catch (Exception ex) {
-            result.correct = false;
             result.errorMessage = ex.getLocalizedMessage();
+            result.correct = false;
+            result.ex = ex;
+            result.status = 500;
+        }
+
+        return result;
+
+    }
+
+    public Result GetByEstado(int idEstado) {
+        Result result = new Result();
+        try {
+            result.object = iMunicipioRepository.findByEstado_IdEstado(idEstado);
+            result.status = 200;
+            result.correct = true;
+
+        } catch (Exception ex) {
+            result.errorMessage = ex.getLocalizedMessage();
+            result.correct = false;
             result.ex = ex;
             result.status = 500;
         }
         return result;
     }
-
 }

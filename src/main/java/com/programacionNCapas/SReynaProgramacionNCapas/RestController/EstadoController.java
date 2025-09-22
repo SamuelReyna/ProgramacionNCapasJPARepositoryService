@@ -1,7 +1,7 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.RestController;
 
-import com.programacionNCapas.SReynaProgramacionNCapas.DAO.EstadoDAOJPAImplementation;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
+import com.programacionNCapas.SReynaProgramacionNCapas.Service.EstadoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class EstadoController {
 
     @Autowired
-    private EstadoDAOJPAImplementation estadoDAOJPAImplementation;
+    private EstadoService estadoService;
 
     /**
      * Obtiene todos los estados de la base de datos
@@ -29,7 +29,7 @@ public class EstadoController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping()
     public ResponseEntity GetAll() {
-        Result result = estadoDAOJPAImplementation.GetAll();
+        Result result = estadoService.GetAll();
         return ResponseEntity.status(result.status).body(result);
     }
 
@@ -43,7 +43,7 @@ public class EstadoController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping("/byPais/{IdPais}")
     public ResponseEntity GetByPais(@PathVariable int IdPais) {
-        Result result = estadoDAOJPAImplementation.GetByIdPais(IdPais);
+        Result result = estadoService.GetByPais(IdPais);
         return ResponseEntity.status(result.status).body(result);
     }
 

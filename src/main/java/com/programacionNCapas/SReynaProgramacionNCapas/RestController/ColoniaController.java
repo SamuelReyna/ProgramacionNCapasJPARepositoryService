@@ -1,6 +1,5 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.RestController;
 
-import com.programacionNCapas.SReynaProgramacionNCapas.DAO.ColoniaDAOJPAImplementation;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
 import com.programacionNCapas.SReynaProgramacionNCapas.Service.ColoniaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/colonia")
 public class ColoniaController {
 
-    @Autowired
-    private ColoniaDAOJPAImplementation coloniaDAOJPAImplementation;
     
     @Autowired
     private ColoniaService coloniaService;
@@ -33,7 +30,7 @@ public class ColoniaController {
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping()
     public ResponseEntity GetAll() {
-        Result result = coloniaDAOJPAImplementation.GetAll();
+        Result result = coloniaService.GetAll();
         return ResponseEntity.status(result.status).body(result);
     }
 

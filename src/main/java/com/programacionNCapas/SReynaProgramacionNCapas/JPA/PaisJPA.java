@@ -14,7 +14,7 @@ public class PaisJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idpais")
-    private int IdPais;
+    private int idPais;
     @Column(name = "nombre")
     private String Nombre;
 
@@ -22,16 +22,16 @@ public class PaisJPA {
     }
 
     public PaisJPA(int IdPais, String Nombre) {
-        this.IdPais = IdPais;
+        this.idPais = IdPais;
         this.Nombre = Nombre;
     }
 
     public int getIdPais() {
-        return IdPais;
+        return idPais;
     }
 
     public void setIdPais(int IdPais) {
-        this.IdPais = IdPais;
+        this.idPais = IdPais;
     }
 
     public String getNombre() {
