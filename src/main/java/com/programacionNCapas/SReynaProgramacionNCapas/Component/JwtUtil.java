@@ -1,0 +1,33 @@
+package com.programacionNCapas.SReynaProgramacionNCapas.Component;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+import java.util.UUID;
+import javax.crypto.SecretKey;
+import org.springframework.stereotype.Component;
+
+@Component
+public class JwtUtil {
+
+    private final SecretKey key
+            = Keys.hmacShaKeyFor("f9Jr4L1x!aP$6mQz7VkB#9cD2hE*3nTqU@8yZrW%5oXj&1bH+KfG^0sLpMvNtY".getBytes());
+
+    public String generateToken(String username, String role) {
+        String jti = UUID.randomUUID().toString();
+
+        return Jwts.builder().setSubject(username)
+                .claim("role", role).setId(jti).setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 60_000))
+                .signWith(key).compact();
+    }
+
+    public Jws<Claims> validateToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build().parseClaimsJws(token);
+    }
+
+}
