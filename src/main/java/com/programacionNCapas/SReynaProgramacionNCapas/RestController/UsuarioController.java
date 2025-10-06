@@ -52,7 +52,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("api/usuario")
 public class UsuarioController {
-
+    
     @Autowired
     private UsuarioService usuarioService;
 
@@ -151,207 +151,208 @@ public class UsuarioController {
         Result result = usuarioService.LogicalDelete(IdUsuario);
         return ResponseEntity.status(result.status).body(result);
     }
-
+    
     @GetMapping("/getByUsername/{Username}")
     public ResponseEntity GetByUsername(@PathVariable("Username") String Username) {
         Result result = usuarioService.GetByUsername(Username);
         return ResponseEntity.status(result.status).body(result);
     }
+    
+    @Operation(
+            summary = "Carga un archivo TXT o XLSX para validación",
+            description = "El archivo se guarda, se calcula un hash SHA-1 y se registra en logs. "
+            + "Si contiene errores se devuelven en la respuesta."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Archivo cargado exitosamente"),
+        @ApiResponse(responseCode = "202", description = "Archivo con errores, ver detalles en respuesta"),
+        @ApiResponse(responseCode = "400", description = "Formato no soportado o archivo duplicado")
+    })
+    @PostMapping(value = "/cargamasiva", consumes = "multipart/form-data")
+    public ResponseEntity CargaMasiva(
+            @Parameter(
+                    description = "Archivo a cargar (txt o xlsx)",
+                    required = true,
+                    content = @Content(mediaType = "multipart/form-data")
+            )
+            @RequestParam("archivo") MultipartFile file) {
+        Result result = new Result();
+        List<UsuarioJPA> usuarios = new ArrayList<>();
+        List<ErrorCM> errores = new ArrayList<>();
 
-//    @Operation(
-//            summary = "Carga un archivo TXT o XLSX para validación",
-//            description = "El archivo se guarda, se calcula un hash SHA-1 y se registra en logs. "
-//            + "Si contiene errores se devuelven en la respuesta."
-//    )
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "Archivo cargado exitosamente"),
-//        @ApiResponse(responseCode = "202", description = "Archivo con errores, ver detalles en respuesta"),
-//        @ApiResponse(responseCode = "400", description = "Formato no soportado o archivo duplicado")
-//    })
-//    @PostMapping(value = "/cargamasiva", consumes = "multipart/form-data")
-//    public ResponseEntity CargaMasiva(
-//            @Parameter(
-//                    description = "Archivo a cargar (txt o xlsx)",
-//                    required = true,
-//                    content = @Content(mediaType = "multipart/form-data")
-//            )
-//            @RequestParam("archivo") MultipartFile file) {
-//        Result result = new Result();
-//        List<UsuarioJPA> usuarios = new ArrayList<>();
-//        List<ErrorCM> errores = new ArrayList<>();
-//
-//        // validar extensión
-//        String extension = file.getOriginalFilename().split("\\.")[1];
-//        boolean valid = extension.equals("txt") || extension.equals("xlsx");
-//
-//        if (!valid) {
-//            errores.add(new ErrorCM(1, "", "Tipo de Archivo Invalido"));
-//            result.correct = false;
-//            result.errorMessage = "Formato no soportado. Solo se aceptan TXT y XLSX.";
-//            return ResponseEntity.status(400).body(result);
-//        }
-//
-//        String uploadDir = System.getProperty("user.dir") + "/src/main/resources/files/files/";
-//        File directory = new File(uploadDir);
-//        if (!directory.exists()) {
-//            directory.mkdirs();
-//        }
-//
-//        try {
-//            // Generar hash SHA-1 del contenido del archivo
-//            // Guardar el archivo
-//            String upDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
-//
-//            File destino = new File(uploadDir + upDate + "_" + file.getOriginalFilename());
-//
-//            // usar la ruta completa como String
-//            String rutaCompleta = destino.getAbsolutePath();
-//
-//            // calcular SHA-1 de la ruta
-//            MessageDigest md = MessageDigest.getInstance("SHA-1");
-//            byte[] messageDigest = md.digest(rutaCompleta.getBytes(StandardCharsets.UTF_8));
-//            BigInteger no = new BigInteger(1, messageDigest);
-//
-//            // convertir a string hexadecimal de 40 caracteres
-//            String pathHash = no.toString(16);
-//            while (pathHash.length() < 40) {
-//                pathHash = "0" + pathHash;
-//            }
-//
-//            //crear archivo para logs.
-//            String logUpload = System.getProperty("user.dir") + "/src/main/resources/files/logs/";
-//            File logDir = new File(logUpload);
-//            if (!logDir.exists()) {
-//                logDir.mkdirs();
-//            }
-//            File logsCM = new File(logDir + "/logsCM.txt");
-//
-//            if (destino.exists()) {
-//                result.correct = false;
-//                result.errorMessage = "El archivo ya fue cargado anteriormente (mismo contenido).";
-//                return ResponseEntity.status(400).body(result);
-//            }
-//
-//            file.transferTo(destino);
-//
-//            // procesar archivo según extensión
-//            if (extension.equalsIgnoreCase("txt")) {
-//                usuarios = ProcesarTXT(destino);
-//            } else if (extension.equalsIgnoreCase("xlsx")) {
-//                usuarios = ProcesarExcel(destino);
-//            }
-//
-//            // validaciones
-//            errores = ValidarDatos(usuarios);
-//
-//            if (errores != null && !errores.isEmpty()) {
-//                try (FileWriter fw = new FileWriter(logsCM, true); PrintWriter writer = new PrintWriter(fw)) {
-//                    String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//                    writer.println("log|" + pathHash + "|" + upDate + "_" + file.getOriginalFilename() + "|" + status.ERROR.ordinal() + "|" + timeStamp + "|" + "Archvo con errores");
-//                    result.object = errores;
-//                } catch (Exception ex) {
-//                    ex.printStackTrace();
-//                }
-//                return ResponseEntity.status(202).body(result);
-//            } else {
-//                try (FileWriter fw = new FileWriter(logsCM, true); PrintWriter writer = new PrintWriter(fw)) {
-//                    String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//                    writer.println("log|" + pathHash + "|" + upDate + "_" + file.getOriginalFilename() + "|" + status.PROCESAR.ordinal() + "|" + timeStamp + "|" + "Archivo listo para procesar");
-//                } catch (Exception ex) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//            result.correct = true;
-//            result.object = pathHash;
-//
-//        } catch (Exception e) {
-//            result.correct = false;
-//            result.errorMessage = "Error al procesar archivo: " + e.getMessage();
-//        }
-//
-//        return ResponseEntity.status(200).body(result);
-//    }
-//
-//    @Operation(
-//            summary = "Procesa un archivo previamente cargado",
-//            description = "Busca en el log por el hash (key). Si el archivo está listo y dentro del tiempo permitido, lo procesa."
-//    )
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "Archivo procesado correctamente"),
-//        @ApiResponse(responseCode = "400", description = "Error en el procesamiento o tiempo expirado")
-//    })
-//    @PostMapping(value = "/cargamasiva/procesar", consumes = "application/json")
-//    public ResponseEntity Procesar(
-//            @RequestBody() Key key) {
-//        String logUpload = System.getProperty("user.dir") + "/src/main/resources/files/logs/";
-//        String uploadDir = System.getProperty("user.dir") + "/src/main/resources/files/files/";
-//        Result result = new Result();
-//        String llave = key.getKey();
-//
-//        try (BufferedReader br = new BufferedReader(new FileReader(logUpload + "logsCM.txt"))) {
-//            String linea;
-//            while ((linea = br.readLine()) != null) {
-//                String id = linea.split("\\|")[1];
-//
-//                if (llave.equals(id)) {
-//                    int statusLog = Integer.parseInt(linea.split("\\|")[3]);
-//                    if (statusLog == 0) {
-//
-//                        String date = linea.split("\\|")[4].trim();
-//                        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//                        LocalDateTime fechaLog = LocalDateTime.parse(date, formato);
-//                        LocalDateTime nowDateTime = LocalDateTime.now();
-//
-//                        long minutes = ChronoUnit.MINUTES.between(fechaLog, nowDateTime);
-//                        String file = linea.split("\\|")[2];
-//                        if (minutes <= 2) {
-//
-//                            String path = uploadDir + file;
-//                            List<UsuarioJPA> usuarios;
-//                            if (file.split("\\.")[1].equals("txt")) {
-//                                usuarios = ProcesarTXT(new File(path));
-//                            } else {
-//                                usuarios = ProcesarExcel(new File(path));
-//                            }
-//
-//                            try (FileWriter fw = new FileWriter(logUpload + "/logsCM.txt", true); PrintWriter writer = new PrintWriter(fw)) {
-//                                String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//                                writer.println("log|" + llave + "|" + file + "|" + status.PROCESADO.ordinal() + "|" + timeStamp + "|Archivo procesado");
-//
-//                            } catch (Exception ex) {
-//                                ex.printStackTrace();
-//                            }
-//
-//                            for (UsuarioJPA usuario : usuarios) {
-//                                usuarioDAOJPAImplementation.Add(usuario);
-//                            }
-//                            result.errorMessage = null;
-//                            result.correct = true;
-//                            result.status = 200;
-//                        } else {
-//                            result.correct = false;
-//                            result.status = 400;
-//                            result.errorMessage = "Tiempo agotado";
-//                            try (FileWriter fw = new FileWriter(logUpload + "/logsCM.txt", true); PrintWriter writer = new PrintWriter(fw)) {
-//                                String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-//                                writer.println("log|" + llave + "|" + file + "|" + status.ERROR.ordinal() + "|" + timeStamp + "|Tiempo de procesado expirado");
-//
-//                            } catch (Exception ex) {
-//                                ex.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception ex) {
-//            result.correct = false;
-//            result.status = 400;
-//            result.errorMessage = ex.getLocalizedMessage();
-//            result.ex = ex;
-//        }
-//
-//        return ResponseEntity.status(result.status).body(result);
-//    }
+        // validar extensión
+        String extension = file.getOriginalFilename().split("\\.")[1];
+        boolean valid = extension.equals("txt") || extension.equals("xlsx");
+        
+        if (!valid) {
+            errores.add(new ErrorCM(1, "", "Tipo de Archivo Invalido"));
+            result.correct = false;
+            result.errorMessage = "Formato no soportado. Solo se aceptan TXT y XLSX.";
+            return ResponseEntity.status(400).body(result);
+        }
+        
+        String uploadDir = System.getProperty("user.dir") + "/src/main/resources/files/files/";
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        
+        try {
+            // Generar hash SHA-1 del contenido del archivo
+            // Guardar el archivo
+            String upDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+            
+            File destino = new File(uploadDir + upDate + "_" + file.getOriginalFilename());
+
+            // usar la ruta completa como String
+            String rutaCompleta = destino.getAbsolutePath();
+
+            // calcular SHA-1 de la ruta
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] messageDigest = md.digest(rutaCompleta.getBytes(StandardCharsets.UTF_8));
+            BigInteger no = new BigInteger(1, messageDigest);
+
+            // convertir a string hexadecimal de 40 caracteres
+            String pathHash = no.toString(16);
+            while (pathHash.length() < 40) {
+                pathHash = "0" + pathHash;
+            }
+
+            //crear archivo para logs.
+            String logUpload = System.getProperty("user.dir") + "/src/main/resources/files/logs/";
+            File logDir = new File(logUpload);
+            if (!logDir.exists()) {
+                logDir.mkdirs();
+            }
+            File logsCM = new File(logDir + "/logsCM.txt");
+            
+            if (destino.exists()) {
+                result.correct = false;
+                result.errorMessage = "El archivo ya fue cargado anteriormente (mismo contenido).";
+                return ResponseEntity.status(400).body(result);
+            }
+            
+            file.transferTo(destino);
+
+            // procesar archivo según extensión
+            if (extension.equalsIgnoreCase("txt")) {
+                usuarios = ProcesarTXT(destino);
+            } else if (extension.equalsIgnoreCase("xlsx")) {
+                usuarios = ProcesarExcel(destino);
+            }
+
+            // validaciones
+            errores = ValidarDatos(usuarios);
+            
+            if (errores != null && !errores.isEmpty()) {
+                try (FileWriter fw = new FileWriter(logsCM, true); PrintWriter writer = new PrintWriter(fw)) {
+                    String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    writer.println("log|" + pathHash + "|" + upDate + "_" + file.getOriginalFilename() + "|" + status.ERROR.ordinal() + "|" + timeStamp + "|" + "Archvo con errores");
+                    result.object = errores;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                return ResponseEntity.status(202).body(result);
+            } else {
+                try (FileWriter fw = new FileWriter(logsCM, true); PrintWriter writer = new PrintWriter(fw)) {
+                    String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    writer.println("log|" + pathHash + "|" + upDate + "_" + file.getOriginalFilename() + "|" + status.PROCESAR.ordinal() + "|" + timeStamp + "|" + "Archivo listo para procesar");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            result.correct = true;
+            result.object = pathHash;
+            
+        } catch (Exception e) {
+            result.correct = false;
+            result.errorMessage = "Error al procesar archivo: " + e.getMessage();
+        }
+        
+        return ResponseEntity.status(200).body(result);
+    }
+    
+    @Operation(
+            summary = "Procesa un archivo previamente cargado",
+            description = "Busca en el log por el hash (key). Si el archivo está listo y dentro del tiempo permitido, lo procesa."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Archivo procesado correctamente"),
+        @ApiResponse(responseCode = "400", description = "Error en el procesamiento o tiempo expirado")
+    })
+    @PostMapping(value = "/cargamasiva/procesar", consumes = "application/json")
+    public ResponseEntity Procesar(
+            @RequestBody() Key key) {
+        String logUpload = System.getProperty("user.dir") + "/src/main/resources/files/logs/";
+        String uploadDir = System.getProperty("user.dir") + "/src/main/resources/files/files/";
+        Result result = new Result();
+        String llave = key.getKey();
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(logUpload + "logsCM.txt"))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String id = linea.split("\\|")[1];
+                
+                if (llave.equals(id)) {
+                    int statusLog = Integer.parseInt(linea.split("\\|")[3]);
+                    if (statusLog == 0) {
+                        
+                        String date = linea.split("\\|")[4].trim();
+                        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        LocalDateTime fechaLog = LocalDateTime.parse(date, formato);
+                        LocalDateTime nowDateTime = LocalDateTime.now();
+                        
+                        long minutes = ChronoUnit.MINUTES.between(fechaLog, nowDateTime);
+                        String file = linea.split("\\|")[2];
+                        if (minutes <= 2) {
+                            
+                            String path = uploadDir + file;
+                            List<UsuarioJPA> usuarios;
+                            if (file.split("\\.")[1].equals("txt")) {
+                                usuarios = ProcesarTXT(new File(path));
+                            } else {
+                                usuarios = ProcesarExcel(new File(path));
+                            }
+                            
+                            try (FileWriter fw = new FileWriter(logUpload + "/logsCM.txt", true); PrintWriter writer = new PrintWriter(fw)) {
+                                String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                                writer.println("log|" + llave + "|" + file + "|" + status.PROCESADO.ordinal() + "|" + timeStamp + "|Archivo procesado");
+                                
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                            
+                            for (UsuarioJPA usuario : usuarios) {
+                                usuarioService.Add(usuario);
+                            }
+                            result.errorMessage = null;
+                            result.correct = true;
+                            result.status = 200;
+                        } else {
+                            result.correct = false;
+                            result.status = 400;
+                            result.errorMessage = "Tiempo agotado";
+                            try (FileWriter fw = new FileWriter(logUpload + "/logsCM.txt", true); PrintWriter writer = new PrintWriter(fw)) {
+                                String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                                writer.println("log|" + llave + "|" + file + "|" + status.ERROR.ordinal() + "|" + timeStamp + "|Tiempo de procesado expirado");
+                                
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            result.correct = false;
+            result.status = 400;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+    }
+    
     private List<UsuarioJPA> ProcesarTXT(File file) {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
@@ -364,7 +365,7 @@ public class UsuarioController {
                 usuario.Direcciones = new ArrayList<>();
                 DireccionJPA direccion = new DireccionJPA();
                 direccion.Colonia = new ColoniaJPA();
-
+                
                 usuario.setNombreUsuario(campos[0]);
                 usuario.setApellidoPaterno(campos[1]);
                 usuario.setApellidoMaterno(campos[2]);
@@ -391,12 +392,12 @@ public class UsuarioController {
             System.out.println(ex);
             return new ArrayList<>();
         }
-
+        
     }
-
+    
     private List<UsuarioJPA> ProcesarExcel(File file) {
         List<UsuarioJPA> usuarios = new ArrayList<>();
-
+        
         try (XSSFWorkbook workbook = new XSSFWorkbook(file)) {
             DataFormatter formatter = new DataFormatter();
             Sheet sheet = workbook.getSheetAt(0);
@@ -427,23 +428,23 @@ public class UsuarioController {
                 direccion.setNumeroExterior(formatter.formatCellValue(row.getCell(14)));
                 direccion.Colonia.setIdColonia((int) row.getCell(15).getNumericCellValue());
                 usuario.Direcciones.add(direccion);
-
+                
                 usuarios.add(usuario);
             }
-
+            
             return usuarios;
-
+            
         } catch (Exception ex) {
             System.out.println(ex);
             return new ArrayList<>();
         }
-
+        
     }
-
+    
     private List<ErrorCM> ValidarDatos(List<UsuarioJPA> usuarios) {
         List<ErrorCM> errores = new ArrayList<>();
         int linea = 1;
-
+        
         for (UsuarioJPA usuario : usuarios) {
             if (usuario.getNombreUsuario() == null
                     || "".equals(usuario.getNombreUsuario())) {
@@ -481,40 +482,40 @@ public class UsuarioController {
             } else if (!validateUsername(usuario.getUsername())) {
                 errores.add(new ErrorCM(linea, usuario.getUsername(), "Username no cumple con el formato requerido"));
             }
-
+            
             linea++;
         }
         return errores;
     }
-
+    
     static boolean OnlyLetters(String text) {
         String regexOnlyLetters = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$";
         Pattern pattern = Pattern.compile(regexOnlyLetters);
         Matcher matcher = pattern.matcher(text);
         return matcher.matches();
     }
-
+    
     static boolean validatePassword(String text) {
         String regexPassword = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
         Pattern pattern = Pattern.compile(regexPassword);
         Matcher matcher = pattern.matcher(text);
         return matcher.matches();
     }
-
+    
     static boolean validateEmail(String text) {
         String regexEmail = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
         Pattern pattern = Pattern.compile(regexEmail);
         Matcher matcher = pattern.matcher(text);
         return matcher.matches();
     }
-
+    
     static boolean validateUsername(String text) {
         String regexUsername = "^(?!.*[_.]{2})[a-zA-Z0-9](?!.*[_.]{2})[a-zA-Z0-9._]{1,14}[a-zA-Z0-9]$";
         Pattern pattern = Pattern.compile(regexUsername);
         Matcher matcher = pattern.matcher(text);
         return matcher.matches();
     }
-
+    
     public enum status {
         PROCESAR, ERROR, PROCESADO
     }

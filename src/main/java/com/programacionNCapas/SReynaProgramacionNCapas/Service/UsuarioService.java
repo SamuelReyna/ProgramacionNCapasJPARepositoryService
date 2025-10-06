@@ -5,10 +5,13 @@ import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.UsuarioJPA;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private IUsuarioRepository iUsuarioRepository;
@@ -142,6 +145,15 @@ public class UsuarioService {
             result.status = 500;
         }
         return result;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UsuarioJPA usuario = (UsuarioJPA) iUsuarioRepository.findByUsername(username);
+        if (usuario == null) {
+            throw new UsernameNotFoundException("Usuario no encontrado: " + username);
+        }
+        return (UserDetails) usuario;
     }
 
 }

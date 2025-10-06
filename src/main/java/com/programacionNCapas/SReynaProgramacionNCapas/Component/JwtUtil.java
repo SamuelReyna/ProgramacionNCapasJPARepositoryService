@@ -1,6 +1,7 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.Component;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -25,9 +26,19 @@ public class JwtUtil {
     }
 
     public Jws<Claims> validateToken(String token) {
-        return Jwts.parserBuilder()
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
                 .setSigningKey(key)
-                .build().parseClaimsJws(token);
+                .build()
+                .parseClaimsJws(token);
+
+        Claims claims = claimsJws.getBody();
+        Date expiration = claims.getExpiration();
+
+        if (expiration != null && expiration.before(new Date())) {
+            throw new ExpiredJwtException(claimsJws.getHeader(), claims, "Token has expired");
+        }
+
+        return claimsJws;
     }
 
 }

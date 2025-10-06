@@ -1,9 +1,9 @@
 package com.programacionNCapas.SReynaProgramacionNCapas.Configuration;
 
 import com.programacionNCapas.SReynaProgramacionNCapas.Component.JwtFilter;
-import jakarta.servlet.Filter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,24 +15,27 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-//    private final JwtFilter jwtFilter;
-//
-//    public SecurityConfig(JwtFilter jwtFilter) {
-//        this.jwtFilter = jwtFilter;
-//    }
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("api/publico").permitAll()
-                .requestMatchers("/api/admin").hasRole("admin")
+                .requestMatchers(HttpMethod.GET, "api/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "api/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "api/**").hasRole("admin")
+                .requestMatchers(HttpMethod.PUT, "api/**").hasRole("admin")
+                .requestMatchers(HttpMethod.PATCH, "api/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "api/usuario/cargamasiva").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
         )
-//                .addFilterBefore((Filter) jwtFilter,
-//                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
-
     }
 
     @Bean
