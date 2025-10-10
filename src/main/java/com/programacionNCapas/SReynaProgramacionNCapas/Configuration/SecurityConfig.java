@@ -26,11 +26,11 @@ public class SecurityConfig {
         return http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "api/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "api/**").permitAll()
-                .requestMatchers(HttpMethod.DELETE, "api/**").hasRole("admin")
-                .requestMatchers(HttpMethod.PUT, "api/**").hasRole("admin")
-                .requestMatchers(HttpMethod.PATCH, "api/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "api/usuario/cargamasiva").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "api/usuario/cargamasiva").hasRole("ADMIN")
                 .anyRequest().authenticated()
         )
                 .addFilterBefore(jwtFilter,

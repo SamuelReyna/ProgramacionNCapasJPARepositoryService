@@ -75,6 +75,7 @@ public class UsuarioJPA implements UserDetails {
         this.IdUser = IdUser;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
@@ -115,6 +116,7 @@ public class UsuarioJPA implements UserDetails {
         this.ApellidoPaterno = ApellidoPaterno;
     }
 
+    @Override
     public String getPassword() {
         return Password;
     }

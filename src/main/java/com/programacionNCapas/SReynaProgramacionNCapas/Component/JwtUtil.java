@@ -21,7 +21,7 @@ public class JwtUtil {
 
         return Jwts.builder().setSubject(username)
                 .claim("role", role).setId(jti).setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 60_000))
+                .setExpiration(new Date(System.currentTimeMillis() + 120_000))
                 .signWith(key).compact();
     }
 
