@@ -4,13 +4,19 @@ import com.programacionNCapas.SReynaProgramacionNCapas.Component.JwtUtil;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.UsuarioJPA;
 import com.programacionNCapas.SReynaProgramacionNCapas.Service.UsuarioService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwt;
 import java.util.HashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +35,7 @@ public class AuthController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping
+    @PostMapping("/login")
     public ResponseEntity GetByUsername(@RequestBody UsuarioJPA usuario) {
 
         Result result = usuarioService.GetByUsername(usuario.getUsername());
@@ -42,12 +48,24 @@ public class AuthController {
             return ResponseEntity.badRequest().body(message);
         }
         String jwt = jwtUtil.generateToken(user.getUsername(), user.getAuthorities().toString());
-    
+
         HashMap<String, Object> response = new HashMap<>();
         response.put("token", jwt);
-        response.put("username", user.getUsername());
-        response.put("roles", user.getAuthorities());
+
         return ResponseEntity.status(result.status).body(response);
+    }
+
+    @GetMapping("/decode")
+    public Map<String, Object> Decode(@RequestHeader("Authorization") String header) {
+        if (header != null && header.startsWith("Bearer ")) {
+            String jwt = header.substring(7);
+            Jws<Claims> claims = jwtUtil.validateToken(jwt);
+            return claims.getBody();
+        } else {
+            throw new IllegalArgumentException("Token inválido o ausente");
+
+        }
+
     }
 
 }
