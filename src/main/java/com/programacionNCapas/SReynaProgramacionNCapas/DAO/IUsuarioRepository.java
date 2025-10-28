@@ -8,4 +8,6 @@ public interface IUsuarioRepository extends JpaRepository<UsuarioJPA, Integer>{
     
     
     UsuarioJPA findByUsername(String Username);  
+    
+    UsuarioJPA findByEmail(String Email);
 }

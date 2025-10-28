@@ -43,7 +43,7 @@ public class UsuarioJPA implements UserDetails {
     @Column(name = "fechanacimiento")
     private LocalDate FechaNacimiento;
     @Column(name = "email", unique = true)
-    private String Email;
+    private String email;
     @Column(name = "telefono")
     private String Telefono;
     @Column(name = "celular")
@@ -56,7 +56,17 @@ public class UsuarioJPA implements UserDetails {
     @Column(name = "img")
     private String Img;
     @Column(name = "estatus")
-    private int Estatus = 1;
+    private int Estatus = 0;
+    @Column(name= "verify")
+    private int verify = 0;
+
+    public int getVerify() {
+        return verify;
+    }
+
+    public void setVerify(int verify) {
+        this.verify = verify;
+    }
     @ManyToOne
     @JoinColumn(name = "idrol")
     public RolJPA Rol = new RolJPA();
@@ -134,11 +144,11 @@ public class UsuarioJPA implements UserDetails {
     }
 
     public String getEmail() {
-        return Email;
+        return email;
     }
 
     public void setEmail(String Email) {
-        this.Email = Email;
+        this.email = Email;
     }
 
     public String getTelefono() {
@@ -181,7 +191,7 @@ public class UsuarioJPA implements UserDetails {
         this.Img = Img;
     }
 
-    public UsuarioJPA(int IdUser, String username, String NombreUsuario, String ApellidoMaterno, String ApellidoPaterno, String Password, LocalDate FechaNacimiento, String Email, String Telefono, String Celular, String Curp, String Sexo, String Img) {
+    public UsuarioJPA(int IdUser, String username, String NombreUsuario, String ApellidoMaterno, String ApellidoPaterno, String Password, LocalDate FechaNacimiento, String Email, String Telefono, String Celular, String Curp, String Sexo, String Img, int verify) {
         this.IdUser = IdUser;
         this.username = username;
         this.NombreUsuario = NombreUsuario;
@@ -189,12 +199,13 @@ public class UsuarioJPA implements UserDetails {
         this.ApellidoPaterno = ApellidoPaterno;
         this.Password = Password;
         this.FechaNacimiento = FechaNacimiento;
-        this.Email = Email;
+        this.email = Email;
         this.Telefono = Telefono;
         this.Celular = Celular;
         this.Curp = Curp;
         this.Sexo = Sexo;
         this.Img = Img;
+        this.verify = verify;
     }
 
     @Override
@@ -221,5 +232,7 @@ public class UsuarioJPA implements UserDetails {
     public boolean isEnabled() {
         return this.Estatus == 1;
     }
+
+  
 
 }

@@ -23,18 +23,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth
+        return http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "api/**").permitAll()
-                .requestMatchers(HttpMethod.DELETE, "api/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "api/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "api/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "api/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "api/usuario/cargamasiva").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/usuario/cargamasiva").hasRole("ADMIN")
                 .anyRequest().authenticated()
-        )
-                .addFilterBefore(jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class)
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

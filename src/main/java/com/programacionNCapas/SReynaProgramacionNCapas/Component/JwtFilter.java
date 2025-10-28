@@ -17,18 +17,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class JwtFilter extends GenericFilter {
-    
+
     private final JwtUtil jwtUtil;
     private final UsuarioService usuarioService;
-    
+
     public JwtFilter(JwtUtil jwtUtil, UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
         this.jwtUtil = jwtUtil;
     }
-    
+
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request
@@ -36,27 +35,35 @@ public class JwtFilter extends GenericFilter {
         HttpServletResponse response
                 = (HttpServletResponse) res;
         String header = request.getHeader("Authorization");
-        
+
+        String path = request.getRequestURI();
+
+        // ❌ Ignorar las rutas públicas
+        if (path.startsWith("/auth/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
                 Jws<Claims> claims = jwtUtil.validateToken(token);
-                
+
                 UserDetails userDetails
                         = usuarioService.loadUserByUsername(claims.getBody().getSubject());
-                
+
                 UsernamePasswordAuthenticationToken auth
                         = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
-                
+
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                
+
             } catch (UsernameNotFoundException e) {
             }
         }
-        
+
         chain.doFilter(req, res);
-        
+
     }
-    
+
 }
