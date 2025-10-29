@@ -10,6 +10,7 @@ import com.programacionNCapas.SReynaProgramacionNCapas.Service.UsuarioService;
 import com.programacionNCapas.SReynaProgramacionNCapas.Service.VerifyTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,14 +67,15 @@ public class AuthController {
 
             return ResponseEntity.badRequest().body(message);
         }
-        if (u.getVerify() == 1 && u.getEstatus() == 1) {
-            String token = verifyTokenService.GenerateToken(u.getIdUser());
-            return ResponseEntity.status(result.status).body(token);
-        }
-        String jwt = jwtUtil.generateToken(user.getUsername(), user.getAuthorities().toString());
-
         HashMap<String, Object> response = new HashMap<>();
-        response.put("token", jwt);
+
+        String jwt = null;
+        if (u.getVerify() == 1 && u.getEstatus() == 1) {
+            jwt = jwtUtil.generateToken(user.getUsername(), user.getAuthorities().toString());
+            response.put("token", jwt);
+        } else {
+            response.put("message", "Cuenta no verificada o bloqueada");
+        }
 
         return ResponseEntity.status(result.status).body(response);
     }
@@ -99,7 +101,7 @@ public class AuthController {
 
                 String token = passwordResetTokenService.GenerarToken(usuario.getIdUser());
 
-                String linkRestablecer = "http://localhost:8080/changePassword?token=" + token;
+                String linkRestablecer = "http://localhost:8081/changePassword?token=" + token;
 
                 String html = """
                               <!DOCTYPE html>
@@ -199,8 +201,6 @@ public class AuthController {
                             if (!resultUpdate.correct) {
                                 result = resultUpdate;
                             } else {
-                                String linkRestablecer = "http://localhost:8080/changePassword?token=" + token;
-
                                 String html = """
                                               <!DOCTYPE html>
                                               <html lang="es">
@@ -277,11 +277,9 @@ public class AuthController {
                                         + "</html>";
                                 emailService.sendEmail(usuario.getEmail(), "Actualización de contraseña", html);
                             }
-
                         }
                     }
                 }
-
             } else {
                 result.status = 400;
                 result.errorMessage = "Token expirado, solicita otro";
@@ -289,7 +287,6 @@ public class AuthController {
         } else {
             result.status = 400;
             result.errorMessage = "Token expirado, solicita otro";
-
         }
         return ResponseEntity.status(result.status).body(result);
     }
