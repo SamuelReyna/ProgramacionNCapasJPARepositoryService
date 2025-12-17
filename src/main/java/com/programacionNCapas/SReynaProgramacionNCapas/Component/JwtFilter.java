@@ -43,6 +43,10 @@ public class JwtFilter extends GenericFilter {
             chain.doFilter(request, response);
             return;
         }
+         if (path.startsWith("/swagger-ui")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);

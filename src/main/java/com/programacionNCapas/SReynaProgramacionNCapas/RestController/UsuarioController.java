@@ -94,7 +94,7 @@ public class UsuarioController {
      *
      * @param usuario
      * @return
-     */
+     */ 
     @Operation(summary = "Agregar un nuevo usuario")
     @ApiResponse(responseCode = "200", description = "Usuario creado correctamente")
     @PostMapping()

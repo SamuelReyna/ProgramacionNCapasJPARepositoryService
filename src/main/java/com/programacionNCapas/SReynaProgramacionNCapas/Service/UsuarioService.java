@@ -166,7 +166,7 @@ public class UsuarioService implements UserDetailsService {
         return result;
     }
 
-    public Result LogicalDelete(int idUsuario) {
+        public Result LogicalDelete(int idUsuario) {
         Result result = new Result();
         try {
             Optional<UsuarioJPA> usuario = iUsuarioRepository.findById(idUsuario);

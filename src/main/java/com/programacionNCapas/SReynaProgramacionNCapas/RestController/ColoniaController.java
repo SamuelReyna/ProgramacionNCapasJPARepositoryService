@@ -41,7 +41,7 @@ public class ColoniaController {
      */
     @Operation(summary = "Obtener todas las colonias de un municipio", description = "Devuelve la lista completa de colonias por un municipio")
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
-    @GetMapping("byMunicipio/{IdMunicipio}")
+    @GetMapping("/byMunicipio/{IdMunicipio}")
     public ResponseEntity GetByMunicipio(@PathVariable int IdMunicipio) {
         Result result = coloniaService.GetByMunicipio(IdMunicipio);
         return ResponseEntity.status(result.status).body(result);

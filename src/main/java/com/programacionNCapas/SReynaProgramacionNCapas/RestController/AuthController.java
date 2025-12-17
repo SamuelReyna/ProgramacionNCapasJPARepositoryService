@@ -10,7 +10,6 @@ import com.programacionNCapas.SReynaProgramacionNCapas.Service.UsuarioService;
 import com.programacionNCapas.SReynaProgramacionNCapas.Service.VerifyTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ public class AuthController {
 
     private final PasswordResetTokenService passwordResetTokenService;
 
-    private final VerifyTokenService verifyTokenService;
+    private final VerifyTokenService verifyTokenService;    
 
     public AuthController(PasswordResetTokenService passwordResetTokenService,
             com.programacionNCapas.SReynaProgramacionNCapas.Component.JwtUtil jwtUtil,
@@ -75,8 +74,8 @@ public class AuthController {
             response.put("token", jwt);
         } else {
             response.put("message", "Cuenta no verificada o bloqueada");
+            result.status = 403;
         }
-
         return ResponseEntity.status(result.status).body(response);
     }
 
