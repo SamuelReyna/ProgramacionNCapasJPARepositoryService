@@ -72,7 +72,7 @@ public class UsuarioJPA implements UserDetails {
     public RolJPA Rol = new RolJPA();
     @JsonManagedReference
     @OneToMany(mappedBy = "Usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<DireccionJPA> Direcciones = new ArrayList<>();
+    public List<DireccionJPA> Direcciones = new ArrayList<>();  
 
     public UsuarioJPA() {
     }

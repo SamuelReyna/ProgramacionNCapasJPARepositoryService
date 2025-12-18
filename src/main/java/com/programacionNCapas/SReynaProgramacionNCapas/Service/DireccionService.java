@@ -67,6 +67,8 @@ public class DireccionService {
         Result result = new Result();
 
         try {
+
+
             DireccionJPA direccion = usuario.Direcciones.get(0);
 
             UsuarioJPA usuarioRef = iUsuarioRepository.getReferenceById(usuario.getIdUser());
