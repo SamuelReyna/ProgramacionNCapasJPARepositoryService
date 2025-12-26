@@ -25,15 +25,13 @@ import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,13 +58,24 @@ public class UsuarioController {
     /**
      * Obtiene todos los usuarios de la base de datos
      *
+     * @param <error>
+     * @param pagina
+     * @param cantidad
+     * @param campo
+     * @param orden
+     * @param busqueda
      * @return
      */
     @Operation(summary = "Obtener todos los usuarios", description = "Devuelve la lista completa de usuarios")
     @ApiResponse(responseCode = "200", description = "Lista obtenida correctamente")
     @GetMapping
-    public ResponseEntity GetAll() {
-        Result result = usuarioService.GetAll();
+    public ResponseEntity GetAll(
+            @RequestParam(name = "pagina", defaultValue = "1", required = false) int pagina,
+            @RequestParam(name = "cantidad", defaultValue = "10", required = false) int cantidad,
+            @RequestParam(name = "campo", defaultValue = "", required = false) String campo,
+            @RequestParam(name = "orden", defaultValue = "ASC", required = false) String orden,
+            @RequestParam(name = "busqueda", defaultValue = "", required = false) String busqueda) {
+        Result result = usuarioService.GetAll(pagina, cantidad, campo, orden, busqueda);
         return ResponseEntity.status(result.status).body(result);
     }
 
@@ -92,15 +101,31 @@ public class UsuarioController {
     /**
      * Agrega un nuevo usuario
      *
+     * @param imagen
      * @param usuario
      * @return
-     */ 
+     */
     @Operation(summary = "Agregar un nuevo usuario")
     @ApiResponse(responseCode = "200", description = "Usuario creado correctamente")
     @PostMapping()
     public ResponseEntity Add(
             @Parameter(description = "Usuario con los datos necesarios")
-            @RequestBody UsuarioJPA usuario) {
+            @RequestPart(name="imagenFile", required = false) MultipartFile imagen,
+            @RequestPart UsuarioJPA usuario) {
+        if (imagen != null && !imagen.isEmpty()) {
+            try {
+                String nombreArchivo = imagen.getOriginalFilename();
+                if (nombreArchivo != null) {
+                    String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf('.') + 1).toLowerCase();
+                    if (extension.matches("jpg|jpeg|png")) {
+                        String base64Img = Base64.getEncoder().encodeToString(imagen.getBytes());
+                        usuario.setImg(base64Img);
+                    }
+                }
+            } catch (Exception ex) {
+
+            }
+        }
         Result result = usuarioService.Add(usuario);
         return ResponseEntity.status(result.status).body(result);
     }

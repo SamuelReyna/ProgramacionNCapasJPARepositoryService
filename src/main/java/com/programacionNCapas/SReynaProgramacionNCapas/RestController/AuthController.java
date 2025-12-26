@@ -3,6 +3,7 @@ package com.programacionNCapas.SReynaProgramacionNCapas.RestController;
 import com.programacionNCapas.SReynaProgramacionNCapas.Component.JwtUtil;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Password;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.Result;
+import com.programacionNCapas.SReynaProgramacionNCapas.JPA.RolJPA;
 import com.programacionNCapas.SReynaProgramacionNCapas.JPA.UsuarioJPA;
 import com.programacionNCapas.SReynaProgramacionNCapas.Service.EmailService;
 import com.programacionNCapas.SReynaProgramacionNCapas.Service.PasswordResetTokenService;
@@ -39,7 +40,7 @@ public class AuthController {
 
     private final PasswordResetTokenService passwordResetTokenService;
 
-    private final VerifyTokenService verifyTokenService;    
+    private final VerifyTokenService verifyTokenService;
 
     public AuthController(PasswordResetTokenService passwordResetTokenService,
             com.programacionNCapas.SReynaProgramacionNCapas.Component.JwtUtil jwtUtil,
@@ -72,6 +73,8 @@ public class AuthController {
         if (u.getVerify() == 1 && u.getEstatus() == 1) {
             jwt = jwtUtil.generateToken(user.getUsername(), user.getAuthorities().toString());
             response.put("token", jwt);
+            response.put("img", u.getImg());
+            response.put("id", u.getIdUser());
         } else {
             response.put("message", "Cuenta no verificada o bloqueada");
             result.status = 403;
@@ -100,7 +103,7 @@ public class AuthController {
 
                 String token = passwordResetTokenService.GenerarToken(usuario.getIdUser());
 
-                String linkRestablecer = "http://localhost:8081/changePassword?token=" + token;
+                String linkRestablecer = "http://192.167.1.122:4200/changePassword?token=" + token;
 
                 String html = """
                               <!DOCTYPE html>
@@ -195,7 +198,7 @@ public class AuthController {
                     if (result.correct) {
                         UsuarioJPA usuario = (UsuarioJPA) result.object;
                         if (password.getPassword() == null ? password.getConfirmPassword() == null : password.getPassword().equals(password.getConfirmPassword())) {
-                            usuario.setPassword(passwordEncoder.encode(password.getPassword()));
+                            usuario.setPassword(password.getPassword());
                             Result resultUpdate = usuarioService.Update(usuario);
                             if (!resultUpdate.correct) {
                                 result = resultUpdate;
@@ -298,7 +301,7 @@ public class AuthController {
             String token = verifyTokenService.GenerateToken(usuario.getIdUser());
 
             // 🔗 Enlace de verificación
-            String linkVerificar = "http://localhost:8080/auth/verifyAccount?token=" + token;
+            String linkVerificar = "http://192.167.1.149:4200/verify-email?token=" + token;
 
             String html = """
                           <!DOCTYPE html>
@@ -476,6 +479,103 @@ public class AuthController {
         }
 
         return ResponseEntity.status(result.status).body(result);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity Register(@RequestBody UsuarioJPA usuario) {
+        usuario.Rol = new RolJPA();
+        usuario.Rol.setIdRol(2);
+        Result result = usuarioService.Add(usuario);
+        if (result.correct) {
+            UsuarioJPA usuarioNuevo = (UsuarioJPA) result.object;
+            String token = verifyTokenService.GenerateToken(usuarioNuevo.getIdUser());
+
+            // 🔗 Enlace de verificación
+            String linkVerificar = "http://192.167.1.149:4200/verify-email?token=" + token;
+
+            String html = """
+                          <!DOCTYPE html>
+                          <html lang="es">
+                          <head>
+                              <meta charset="UTF-8">
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                              <title>Verificaci\u00f3n de Cuenta</title>
+                              <style>
+                                  body {
+                                      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                      background-color: #f4f4f4;
+                                      margin: 0;
+                                      padding: 0;
+                                  }
+                                  .container {
+                                      max-width: 600px;
+                                      margin: 40px auto;
+                                      background-color: #ffffff;
+                                      border-radius: 10px;
+                                      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                                      overflow: hidden;
+                                  }
+                                  .header {
+                                      background-color: #28a745;
+                                      color: #ffffff;
+                                      padding: 20px;
+                                      text-align: center;
+                                  }
+                                  .content {
+                                      padding: 30px;
+                                      color: #333333;
+                                      line-height: 1.6;
+                                  }
+                                  .button {
+                                      display: inline-block;
+                                      padding: 12px 24px;
+                                      margin: 20px 0;
+                                      background-color: #28a745;
+                                      color: #ffffff;
+                                      text-decoration: none;
+                                      border-radius: 6px;
+                                      font-weight: bold;
+                                      transition: background-color 0.3s ease;
+                                  }
+                                  .button:hover {
+                                      background-color: #1e7e34;
+                                  }
+                                  .footer {
+                                      text-align: center;
+                                      font-size: 12px;
+                                      color: #999999;
+                                      padding: 20px;
+                                      border-top: 1px solid #eeeeee;
+                                  }
+                              </style>
+                          </head>
+                          <body>
+                              <div class="container">
+                                  <div class="header">
+                                      <h1>\u00a1Bienvenido """ + usuarioNuevo.getUsername() + "!</h1>\n"
+                    + "        </div>\n"
+                    + "        <div class=\"content\">\n"
+                    + "            <p>Gracias por registrarte en nuestra aplicación.</p>\n"
+                    + "            <p>Antes de comenzar, necesitamos verificar tu dirección de correo electrónico.</p>\n"
+                    + "            <p>Haz clic en el siguiente botón para activar tu cuenta:</p>\n"
+                    + "            <a href=\"" + linkVerificar + "\" class=\"button\">Verificar mi cuenta</a>\n"
+                    + "            <p>Si no creaste esta cuenta, puedes ignorar este mensaje.</p>\n"
+                    + "        </div>\n"
+                    + "        <div class=\"footer\">\n"
+                    + "            &copy; 2025 TuAplicación. Todos los derechos reservados.\n"
+                    + "        </div>\n"
+                    + "    </div>\n"
+                    + "</body>\n"
+                    + "</html>";
+
+            emailService.sendEmail(
+                    usuario.getEmail(),
+                    "Verificación de cuenta - TuAplicación",
+                    html
+            );
+        }
+
+        return ResponseEntity.ok(this);
     }
 
 }
